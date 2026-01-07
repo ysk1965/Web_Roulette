@@ -2,13 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics, logEvent, Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDGYVNdPOh1b4Sf-XC940Ctzi1zdOD-gsw",
-  authDomain: "webroulette-40a7a.firebaseapp.com",
-  projectId: "webroulette-40a7a",
-  storageBucket: "webroulette-40a7a.firebasestorage.app",
-  messagingSenderId: "106675144930",
-  appId: "1:106675144930:web:eea480535d18d10d2c36bb",
-  measurementId: "G-B3MB3RQ49V"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

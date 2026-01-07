@@ -221,7 +221,7 @@ export default function App() {
 
           <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4">
             <Coffee className="w-8 h-8 sm:w-12 sm:h-12 text-amber-600 dark:text-amber-400" />
-            <h1 className="text-3xl sm:text-5xl font-bold text-gray-800 dark:text-gray-100">커피 룰렛</h1>
+            <h1 className="text-3xl sm:text-5xl font-bold text-gray-800 dark:text-gray-100">커피 네이버 룰렛</h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
             오늘 누가 커피를 쏠까요? 룰렛을 돌려보세요!
