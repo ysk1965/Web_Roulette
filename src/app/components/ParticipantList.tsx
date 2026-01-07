@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useLanguage } from '../../lib/i18n';
 
 interface ParticipantListProps {
   participants: string[];
@@ -104,6 +105,7 @@ function DraggableItem({ participant, index, moveItem, onRemove, disabled }: Dra
 
 export function ParticipantList({ participants, onAdd, onRemove, onReorder, isSpinning = false }: ParticipantListProps) {
   const [inputValue, setInputValue] = useState('');
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +139,7 @@ export function ParticipantList({ participants, onAdd, onRemove, onReorder, isSp
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder={isSpinning ? "룰렛 진행 중..." : "참가자 이름을 입력하세요"}
+            placeholder={isSpinning ? t('spinning') : t('participantPlaceholder')}
             disabled={isSpinning}
             className="flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
           />
@@ -158,7 +160,7 @@ export function ParticipantList({ participants, onAdd, onRemove, onReorder, isSp
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Shuffle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-              순서 섞기
+              {t('shuffleOrder')}
             </Button>
           </div>
         )}
@@ -166,7 +168,7 @@ export function ParticipantList({ participants, onAdd, onRemove, onReorder, isSp
         <div className="space-y-2 max-h-[300px] sm:max-h-[400px] overflow-y-auto">
           {participants.length === 0 ? (
             <p className="text-center text-gray-400 dark:text-gray-500 py-4 text-sm sm:text-base">
-              아직 참가자가 없습니다
+              {t('noParticipants')}
             </p>
           ) : (
             participants.map((participant, index) => (
@@ -184,8 +186,7 @@ export function ParticipantList({ participants, onAdd, onRemove, onReorder, isSp
 
         {participants.length > 0 && (
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
-            총 {participants.length}명 참가 중
-            {!isSpinning && <span className="block text-xs mt-1 opacity-70">드래그로 순서 변경 가능</span>}
+            {participants.length}{t('participants')}
           </p>
         )}
       </div>

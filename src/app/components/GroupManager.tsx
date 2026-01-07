@@ -3,6 +3,7 @@ import { Save, Trash2, Users, Download, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
+import { useLanguage } from '../../lib/i18n';
 
 export interface ParticipantGroup {
   id: string;
@@ -24,6 +25,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
   const [groups, setGroups] = useState<ParticipantGroup[]>([]);
   const [groupName, setGroupName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const loadGroups = () => {
@@ -44,12 +46,12 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
 
   const saveGroup = () => {
     if (!groupName.trim()) {
-      alert('그룹 이름을 입력해주세요!');
+      alert(t('enterGroupName'));
       return;
     }
 
     if (currentParticipants.length === 0) {
-      alert('저장할 참가자가 없습니다!');
+      alert(t('noParticipantsToSave'));
       return;
     }
 
@@ -70,7 +72,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
   };
 
   const deleteGroup = (id: string) => {
-    if (confirm('이 그룹을 삭제하시겠습니까?')) {
+    if (confirm(t('confirmDeleteGroup'))) {
       const updatedGroups = groups.filter((g) => g.id !== id);
       setGroups(updatedGroups);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGroups));
@@ -78,7 +80,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
   };
 
   const resetGroupStats = (id: string) => {
-    if (confirm('이 그룹의 당첨 기록을 초기화하시겠습니까?')) {
+    if (confirm(t('confirmResetStats'))) {
       const updatedGroups = groups.map((g) =>
         g.id === id ? { ...g, stats: {} } : g
       );
@@ -101,7 +103,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
       <div className="flex items-center justify-between mb-4 gap-2">
         <h2 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
           <Users className="w-5 h-5 sm:w-6 sm:h-6" />
-          저장된 그룹
+          {t('savedGroups')}
         </h2>
         <Button
           onClick={() => setShowSaveForm(!showSaveForm)}
@@ -111,7 +113,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
           className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 text-xs sm:text-sm"
         >
           <Save className="w-4 h-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">현재 그룹 </span>저장
+          {t('saveCurrentGroup')}
         </Button>
       </div>
 
@@ -119,20 +121,20 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
       {showSaveForm && (
         <div className="mb-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-            현재 참가자 {currentParticipants.length}명을 저장합니다
+            {t('currentParticipants')} {currentParticipants.length}{t('peopleToSave')}
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
             <Input
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              placeholder="그룹 이름 (예: 개발팀)"
+              placeholder={t('groupNamePlaceholder')}
               onKeyDown={(e) => e.key === 'Enter' && saveGroup()}
               className="dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
             />
             <div className="flex gap-2">
               <Button onClick={saveGroup} size="sm" className="flex-1 sm:flex-none">
-                저장
+                {t('save')}
               </Button>
               <Button
                 onClick={() => {
@@ -143,7 +145,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
                 size="sm"
                 className="flex-1 sm:flex-none dark:bg-gray-700 dark:border-gray-600"
               >
-                취소
+                {t('cancel')}
               </Button>
             </div>
           </div>
@@ -155,8 +157,8 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
         {groups.length === 0 ? (
           <div className="text-center py-6 sm:py-8 text-gray-400 dark:text-gray-500">
             <Users className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm sm:text-base">저장된 그룹이 없습니다</p>
-            <p className="text-xs sm:text-sm mt-1">참가자를 추가하고 그룹을 저장해보세요</p>
+            <p className="text-sm sm:text-base">{t('noGroups')}</p>
+            <p className="text-xs sm:text-sm mt-1">{t('noGroupsGuide')}</p>
           </div>
         ) : (
           groups.map((group) => (
@@ -175,7 +177,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
                     <h3 className="font-semibold text-gray-800 dark:text-gray-100">{group.name}</h3>
                     {activeGroupId === group.id && (
                       <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full">
-                        활성
+                        {t('active')}
                       </span>
                     )}
                   </div>
@@ -188,7 +190,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
                     className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 text-xs px-2 sm:px-3"
                   >
                     <Download className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">불러오기</span>
+                    <span className="hidden sm:inline">{t('load')}</span>
                   </Button>
                   <Button
                     onClick={() => deleteGroup(group.id)}
@@ -203,15 +205,15 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
 
               {/* 그룹 정보 */}
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                {group.participants.length}명 · {group.participants.join(', ')}
+                {group.participants.length}{t('participants')} · {group.participants.join(', ')}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                {new Date(group.createdAt).toLocaleDateString('ko-KR')} · 총 {getTotalWins(group.stats)}회 진행
+                {new Date(group.createdAt).toLocaleDateString('ko-KR')} · {getTotalWins(group.stats)}{t('totalRounds')}
               </p>
               {group.stats && Object.keys(group.stats).length > 0 && (
                 <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold">당첨 기록:</p>
+                    <p className="font-semibold">{t('winRecord')}</p>
                     <Button
                       onClick={() => resetGroupStats(group.id)}
                       variant="ghost"
@@ -219,7 +221,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
                       className="h-6 px-2 text-xs text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
                     >
                       <RotateCcw className="w-3 h-3 mr-1" />
-                      초기화
+                      {t('reset')}
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-1 sm:gap-2">
@@ -230,7 +232,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
                           key={name}
                           className="bg-white dark:bg-gray-700 px-2 py-1 rounded border border-purple-200 dark:border-purple-700 dark:text-gray-200"
                         >
-                          {name}: {count}회
+                          {name}: {count}{t('roundsUnit')}
                         </span>
                       ))}
                   </div>
@@ -243,7 +245,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
 
       {groups.length > 0 && (
         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
-          총 {groups.length}개 그룹 저장됨
+          {groups.length}{t('totalGroups')}
         </p>
       )}
     </Card>
