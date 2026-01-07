@@ -79,9 +79,9 @@ export function AdBanner({
     }
   }, [adClient, adSlot, adUnit, testMode, adSize]);
 
-  // 위치에 따른 스타일
+  // 위치에 따른 스타일 (광고 없을 때 공간 최소화)
   const positionStyles: Record<AdPosition, string> = {
-    top: 'w-full flex justify-center py-2',
+    top: 'w-full flex justify-center',
     bottom: 'w-full flex justify-center py-2',
     sidebar: 'w-full flex justify-center py-2',
   };
@@ -118,8 +118,7 @@ export function AdBanner({
           className="adsbygoogle"
           style={{
             display: 'block',
-            width: adSize.width,
-            height: adSize.height,
+            minHeight: '50px',
           }}
           data-ad-client={adClient}
           data-ad-slot={adSlot}

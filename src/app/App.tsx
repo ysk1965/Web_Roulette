@@ -26,6 +26,7 @@ import {
 
 const STORAGE_KEY = 'coffee-roulette-groups';
 const THEME_KEY = 'coffee-roulette-theme';
+const TUTORIAL_KEY = 'coffee-roulette-visited';
 
 // 두 배열이 같은 요소를 가지는지 확인 (순서 무관)
 const arraysHaveSameElements = (arr1: string[], arr2: string[]): boolean => {
@@ -44,6 +45,7 @@ export default function App() {
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
   // 다크 모드 초기화
@@ -55,6 +57,19 @@ export default function App() {
     setIsDarkMode(shouldBeDark);
     document.documentElement.classList.toggle('dark', shouldBeDark);
   }, []);
+
+  // 튜토리얼 (첫 방문 체크)
+  useEffect(() => {
+    const hasVisited = localStorage.getItem(TUTORIAL_KEY);
+    if (!hasVisited) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const dismissTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem(TUTORIAL_KEY, 'true');
+  };
 
   // 다크 모드 토글
   const toggleDarkMode = () => {
@@ -86,6 +101,10 @@ export default function App() {
     setParticipants(newParticipants);
     setActiveGroupId(findMatchingGroup(newParticipants));
     logAddParticipant();
+    // 참가자 추가 시 튜토리얼 닫기
+    if (showTutorial) {
+      dismissTutorial();
+    }
   };
 
   const handleRemoveParticipant = (index: number) => {
@@ -241,7 +260,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8 px-3 sm:px-4 transition-colors duration-300">
       {/* 상단 광고 배너 */}
-      <div className="max-w-6xl mx-auto mb-4">
+      <div className="max-w-6xl mx-auto mb-2 sm:mb-4">
         <div className="hidden sm:block">
           <AdBanner position="top" size="leaderboard" adClient="ca-pub-4378386739623889" adSlot="5437423182" testMode={false} />
         </div>
@@ -322,18 +341,37 @@ export default function App() {
           {/* 우측 사이드바 */}
           <div className="space-y-4 sm:space-y-6 order-2 lg:order-2">
             {/* 참가자 목록 섹션 */}
-            <Card className="p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-0 dark:border dark:border-gray-700">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6 text-center">
-                {t('participantManagement')}
-              </h2>
-              <ParticipantList
-                participants={participants}
-                onAdd={handleAddParticipant}
-                onRemove={handleRemoveParticipant}
-                onReorder={handleReorderParticipants}
-                isSpinning={isSpinning}
-              />
-            </Card>
+            <div className="relative">
+              {/* 튜토리얼 툴팁 */}
+              {showTutorial && (
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full z-50 animate-bounce">
+                  <div className="bg-amber-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-[280px] relative">
+                    <p className="font-bold text-sm mb-1">{t('tutorialTitle')}</p>
+                    <p className="text-sm">{t('tutorialMessage')}</p>
+                    <button
+                      onClick={dismissTutorial}
+                      className="mt-2 text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition-colors"
+                    >
+                      {t('tutorialDismiss')}
+                    </button>
+                    {/* 말풍선 꼬리 */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-amber-500" />
+                  </div>
+                </div>
+              )}
+              <Card className="p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-0 dark:border dark:border-gray-700">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6 text-center">
+                  {t('participantManagement')}
+                </h2>
+                <ParticipantList
+                  participants={participants}
+                  onAdd={handleAddParticipant}
+                  onRemove={handleRemoveParticipant}
+                  onReorder={handleReorderParticipants}
+                  isSpinning={isSpinning}
+                />
+              </Card>
+            </div>
 
             {/* 그룹 관리 섹션 */}
             <GroupManager

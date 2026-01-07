@@ -72,6 +72,11 @@ const translations = {
     // Ad
     adArea: '광고 영역',
 
+    // Tutorial
+    tutorialTitle: '환영합니다! 👋',
+    tutorialMessage: '참가자 이름을 입력하고 + 버튼을 눌러 추가해보세요!',
+    tutorialDismiss: '알겠어요',
+
     // Share
     shareResult: '결과 공유하기',
     shareKakao: '카카오톡',
@@ -156,6 +161,11 @@ const translations = {
     shareCopyLink: 'Copy Link',
     linkCopied: 'Link copied!',
     shareMessage: "🎉 Today's coffee buyer: {winner}!\nDecided fairly with Coffee Roulette",
+
+    // Tutorial
+    tutorialTitle: 'Welcome! 👋',
+    tutorialMessage: 'Enter a name and click + to add participants!',
+    tutorialDismiss: 'Got it',
   },
 } as const;
 
