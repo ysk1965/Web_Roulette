@@ -157,64 +157,69 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
           groups.map((group) => (
             <div
               key={group.id}
-              className={`flex items-center justify-between rounded-lg px-4 py-3 border-2 transition-all ${
+              className={`rounded-lg px-4 py-3 border-2 transition-all ${
                 activeGroupId === group.id
                   ? 'bg-gradient-to-r from-purple-100 to-pink-100 border-purple-400'
                   : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
               }`}
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-800">{group.name}</h3>
-                  {activeGroupId === group.id && (
-                    <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full">
-                      활성
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600">
-                  {group.participants.length}명 · {group.participants.join(', ')}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(group.createdAt).toLocaleDateString('ko-KR')} · 총 {getTotalWins(group.stats)}회 진행
-                </p>
-                {group.stats && Object.keys(group.stats).length > 0 && (
-                  <div className="mt-2 text-xs text-gray-600">
-                    <p className="font-semibold mb-1">당첨 기록:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(group.stats)
-                        .sort(([, a], [, b]) => b - a)
-                        .map(([name, count]) => (
-                          <span
-                            key={name}
-                            className="bg-white px-2 py-1 rounded border border-purple-200"
-                          >
-                            {name}: {count}회
-                          </span>
-                        ))}
-                    </div>
+              {/* 헤더: 타이틀 + 버튼 */}
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-gray-800 text-lg">{group.name}</h3>
+                    {activeGroupId === group.id && (
+                      <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full shrink-0">
+                        활성
+                      </span>
+                    )}
                   </div>
-                )}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <Button
+                    onClick={() => loadGroup(group)}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    불러오기
+                  </Button>
+                  <Button
+                    onClick={() => deleteGroup(group.id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => loadGroup(group)}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white"
-                >
-                  <Download className="w-4 h-4 mr-1" />
-                  불러오기
-                </Button>
-                <Button
-                  onClick={() => deleteGroup(group.id)}
-                  variant="outline"
-                  size="sm"
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
+
+              {/* 그룹 정보 */}
+              <p className="text-sm text-gray-600">
+                {group.participants.length}명 · {group.participants.join(', ')}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                {new Date(group.createdAt).toLocaleDateString('ko-KR')} · 총 {getTotalWins(group.stats)}회 진행
+              </p>
+              {group.stats && Object.keys(group.stats).length > 0 && (
+                <div className="mt-2 text-xs text-gray-600">
+                  <p className="font-semibold mb-1">당첨 기록:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(group.stats)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([name, count]) => (
+                        <span
+                          key={name}
+                          className="bg-white px-2 py-1 rounded border border-purple-200"
+                        >
+                          {name}: {count}회
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}

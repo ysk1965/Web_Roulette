@@ -4,7 +4,8 @@ import { ParticipantList } from './components/ParticipantList';
 import { GroupManager, ParticipantGroup } from './components/GroupManager';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
-import { Coffee } from 'lucide-react';
+import { Input } from './components/ui/input';
+import { Coffee, Save } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,21 +16,51 @@ import {
 
 const STORAGE_KEY = 'coffee-roulette-groups';
 
+// 두 배열이 같은 요소를 가지는지 확인 (순서 무관)
+const arraysHaveSameElements = (arr1: string[], arr2: string[]): boolean => {
+  if (arr1.length !== arr2.length) return false;
+  const sorted1 = [...arr1].sort();
+  const sorted2 = [...arr2].sort();
+  return sorted1.every((val, idx) => val === sorted2[idx]);
+};
+
 export default function App() {
   const [participants, setParticipants] = useState<string[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [showWinnerDialog, setShowWinnerDialog] = useState(false);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+
+  // 참가자 목록과 일치하는 저장된 그룹 찾기
+  const findMatchingGroup = (participantList: string[]): string | null => {
+    const savedGroups = localStorage.getItem(STORAGE_KEY);
+    if (!savedGroups || participantList.length === 0) return null;
+
+    try {
+      const groups: ParticipantGroup[] = JSON.parse(savedGroups);
+      const matchingGroup = groups.find(group =>
+        arraysHaveSameElements(group.participants, participantList)
+      );
+      return matchingGroup?.id || null;
+    } catch {
+      return null;
+    }
+  };
 
   const handleAddParticipant = (name: string) => {
-    setParticipants([...participants, name]);
-    setActiveGroupId(null); // 참가자가 추가되면 활성 그룹 해제
+    const newParticipants = [...participants, name];
+    setParticipants(newParticipants);
+    // 일치하는 그룹이 있으면 활성화, 없으면 해제
+    setActiveGroupId(findMatchingGroup(newParticipants));
   };
 
   const handleRemoveParticipant = (index: number) => {
-    setParticipants(participants.filter((_, i) => i !== index));
-    setActiveGroupId(null); // 참가자가 제거되면 활성 그룹 해제
+    const newParticipants = participants.filter((_, i) => i !== index);
+    setParticipants(newParticipants);
+    // 일치하는 그룹이 있으면 활성화, 없으면 해제
+    setActiveGroupId(findMatchingGroup(newParticipants));
   };
 
   const handleLoadGroup = (groupParticipants: string[], groupId: string) => {
@@ -78,12 +109,51 @@ export default function App() {
       });
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGroups));
-      
+
       // GroupManager를 다시 렌더링하기 위해 강제로 업데이트
       window.dispatchEvent(new Event('storage'));
     } catch (error) {
       console.error('Failed to update group stats:', error);
     }
+  };
+
+  // 새 그룹 저장 및 현재 당첨자 기록
+  const saveNewGroupWithWinner = () => {
+    if (!newGroupName.trim()) {
+      alert('그룹 이름을 입력해주세요!');
+      return;
+    }
+
+    if (!winner) return;
+
+    const newGroupId = Date.now().toString();
+    const newGroup: ParticipantGroup = {
+      id: newGroupId,
+      name: newGroupName.trim(),
+      participants: [...participants],
+      createdAt: Date.now(),
+      stats: { [winner]: 1 }, // 현재 당첨자 기록 포함
+    };
+
+    const savedGroups = localStorage.getItem(STORAGE_KEY);
+    const groups: ParticipantGroup[] = savedGroups ? JSON.parse(savedGroups) : [];
+    const updatedGroups = [...groups, newGroup];
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGroups));
+
+    // 새 그룹을 활성화
+    setActiveGroupId(newGroupId);
+    setShowSavePrompt(false);
+    setNewGroupName('');
+
+    // GroupManager 업데이트
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleCloseWinnerDialog = () => {
+    setShowWinnerDialog(false);
+    setShowSavePrompt(false);
+    setNewGroupName('');
   };
 
   return (
@@ -160,22 +230,115 @@ export default function App() {
         </div>
 
         {/* 당첨자 팝업 */}
-        <Dialog open={showWinnerDialog} onOpenChange={setShowWinnerDialog}>
+        <Dialog open={showWinnerDialog} onOpenChange={handleCloseWinnerDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-3xl text-center">
                 🎉 당첨 축하합니다! 🎉
               </DialogTitle>
-              <DialogDescription className="text-center text-xl pt-4">
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-8 px-6 rounded-lg shadow-lg mb-4">
-                  <p className="text-4xl font-bold mb-2">{winner}</p>
-                  <p className="text-lg">님이 커피를 쏩니다!</p>
+              <DialogDescription asChild>
+                <div className="text-center text-xl pt-4">
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-8 px-6 rounded-lg shadow-lg mb-4">
+                    <p className="text-4xl font-bold mb-2">{winner}</p>
+                    <p className="text-lg">님이 커피를 쏩니다!</p>
+                  </div>
+                  <p className="text-gray-600">☕ 맛있는 커피 한 잔 부탁드립니다 ☕</p>
+
+                  {/* 그룹 미연동 시 저장 유도 */}
+                  {!activeGroupId && !showSavePrompt && (
+                    <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <p className="text-sm text-amber-800 mb-2">
+                        이 결과를 기록하시겠어요?
+                      </p>
+                      <Button
+                        onClick={() => setShowSavePrompt(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-amber-400 text-amber-700 hover:bg-amber-100"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        그룹으로 저장하고 기록하기
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* 그룹 저장 폼 */}
+                  {!activeGroupId && showSavePrompt && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 text-left">
+                      <p className="text-sm text-gray-700 mb-2">
+                        현재 참가자 {participants.length}명을 그룹으로 저장하고
+                        <br />이 결과를 기록합니다.
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={newGroupName}
+                          onChange={(e) => setNewGroupName(e.target.value)}
+                          placeholder="그룹 이름 (예: 개발팀)"
+                          onKeyDown={(e) => e.key === 'Enter' && saveNewGroupWithWinner()}
+                          className="text-base"
+                        />
+                        <Button onClick={saveNewGroupWithWinner} size="sm">
+                          저장
+                        </Button>
+                      </div>
+                      <Button
+                        onClick={() => setShowSavePrompt(false)}
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2 text-gray-500"
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* 그룹 연동됨 - 당첨 기록 표시 */}
+                  {activeGroupId && (
+                    <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 text-left">
+                      <p className="text-sm text-green-700 mb-2 text-center">
+                        ✓ 결과가 그룹에 자동으로 기록되었습니다
+                      </p>
+                      {(() => {
+                        const savedGroups = localStorage.getItem(STORAGE_KEY);
+                        if (!savedGroups) return null;
+                        const groups: ParticipantGroup[] = JSON.parse(savedGroups);
+                        const activeGroup = groups.find(g => g.id === activeGroupId);
+                        if (!activeGroup?.stats || Object.keys(activeGroup.stats).length === 0) return null;
+
+                        const sortedStats = Object.entries(activeGroup.stats)
+                          .sort(([, a], [, b]) => b - a);
+                        const totalWins = sortedStats.reduce((sum, [, count]) => sum + count, 0);
+
+                        return (
+                          <div className="mt-2 pt-2 border-t border-green-200">
+                            <p className="text-xs text-gray-600 mb-2 text-center font-semibold">
+                              📊 {activeGroup.name} 당첨 기록 (총 {totalWins}회)
+                            </p>
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              {sortedStats.map(([name, count]) => (
+                                <span
+                                  key={name}
+                                  className={`text-xs px-2 py-1 rounded ${
+                                    name === winner
+                                      ? 'bg-orange-200 text-orange-800 font-bold'
+                                      : 'bg-white text-gray-700 border border-gray-200'
+                                  }`}
+                                >
+                                  {name}: {count}회
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
-                <p className="text-gray-600">☕ 맛있는 커피 한 잔 부탁드립니다 ☕</p>
               </DialogDescription>
             </DialogHeader>
-            <Button 
-              onClick={() => setShowWinnerDialog(false)}
+            <Button
+              onClick={handleCloseWinnerDialog}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
             >
               확인
