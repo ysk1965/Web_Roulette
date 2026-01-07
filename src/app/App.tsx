@@ -8,6 +8,14 @@ import { Input } from './components/ui/input';
 import { Coffee, Save, Moon, Sun } from 'lucide-react';
 import { AdBanner } from './components/AdBanner';
 import {
+  logSpinRoulette,
+  logSpinComplete,
+  logGroupSave,
+  logGroupLoad,
+  logAddParticipant,
+  logToggleDarkMode,
+} from '../lib/firebase';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -52,6 +60,7 @@ export default function App() {
     setIsDarkMode(newMode);
     document.documentElement.classList.toggle('dark', newMode);
     localStorage.setItem(THEME_KEY, newMode ? 'dark' : 'light');
+    logToggleDarkMode(newMode);
   };
 
   // 참가자 목록과 일치하는 저장된 그룹 찾기
@@ -74,6 +83,7 @@ export default function App() {
     const newParticipants = [...participants, name];
     setParticipants(newParticipants);
     setActiveGroupId(findMatchingGroup(newParticipants));
+    logAddParticipant();
   };
 
   const handleRemoveParticipant = (index: number) => {
@@ -91,6 +101,16 @@ export default function App() {
     setParticipants(groupParticipants);
     setActiveGroupId(groupId);
     setWinner(null);
+
+    // 그룹 이름 찾아서 로깅
+    const savedGroups = localStorage.getItem(STORAGE_KEY);
+    if (savedGroups) {
+      const groups: ParticipantGroup[] = JSON.parse(savedGroups);
+      const group = groups.find(g => g.id === groupId);
+      if (group) {
+        logGroupLoad(group.name, groupParticipants.length);
+      }
+    }
   };
 
   const handleSpin = () => {
@@ -101,12 +121,14 @@ export default function App() {
     setIsSpinning(true);
     setWinner(null);
     setShowWinnerDialog(false);
+    logSpinRoulette(participants.length);
   };
 
   const handleSpinComplete = (winnerName: string) => {
     setIsSpinning(false);
     setWinner(winnerName);
     setShowWinnerDialog(true);
+    logSpinComplete(winnerName, participants.length);
 
     if (activeGroupId) {
       updateGroupStats(activeGroupId, winnerName);
@@ -161,6 +183,7 @@ export default function App() {
     setShowSavePrompt(false);
     setNewGroupName('');
     window.dispatchEvent(new Event('storage'));
+    logGroupSave(newGroupName.trim(), participants.length);
   };
 
   const handleCloseWinnerDialog = () => {
