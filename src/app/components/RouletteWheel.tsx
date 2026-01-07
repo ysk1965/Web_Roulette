@@ -82,7 +82,7 @@ export function RouletteWheel({ participants, isSpinning, onSpinComplete }: Roul
       // 애니메이션 완료 후 당첨자 알림 및 confetti 효과
       timeoutRef.current = setTimeout(() => {
         // Confetti 효과 발동
-        const duration = 15000;
+        const duration = 5000;
         const animationEnd = Date.now() + duration;
         const defaults = { startVelocity: 25, spread: 360, ticks: 60, zIndex: 100 };
 
