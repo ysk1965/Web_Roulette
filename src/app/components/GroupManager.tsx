@@ -97,10 +97,10 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
   };
 
   return (
-    <Card className="p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-0 dark:border dark:border-gray-700">
-      <div className="flex items-center justify-between mb-4 gap-2">
-        <h2 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-          <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+    <Card className="p-6 bg-white/80 backdrop-blur">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <Users className="w-6 h-6" />
           저장된 그룹
         </h2>
         <Button
@@ -108,44 +108,39 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
           variant="outline"
           size="sm"
           disabled={currentParticipants.length === 0}
-          className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 text-xs sm:text-sm"
         >
-          <Save className="w-4 h-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">현재 그룹 </span>저장
+          <Save className="w-4 h-4 mr-2" />
+          현재 그룹 저장
         </Button>
       </div>
 
       {/* 그룹 저장 폼 */}
       {showSaveForm && (
-        <div className="mb-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-gray-600 mb-2">
             현재 참가자 {currentParticipants.length}명을 저장합니다
           </p>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2">
             <Input
               type="text"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              placeholder="그룹 이름 (예: 개발팀)"
+              placeholder="그룹 이름 (예: 개발팀, 디자인팀)"
               onKeyDown={(e) => e.key === 'Enter' && saveGroup()}
-              className="dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
             />
-            <div className="flex gap-2">
-              <Button onClick={saveGroup} size="sm" className="flex-1 sm:flex-none">
-                저장
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowSaveForm(false);
-                  setGroupName('');
-                }}
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none dark:bg-gray-700 dark:border-gray-600"
-              >
-                취소
-              </Button>
-            </div>
+            <Button onClick={saveGroup} size="sm">
+              저장
+            </Button>
+            <Button
+              onClick={() => {
+                setShowSaveForm(false);
+                setGroupName('');
+              }}
+              variant="outline"
+              size="sm"
+            >
+              취소
+            </Button>
           </div>
         </div>
       )}
@@ -153,28 +148,28 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
       {/* 저장된 그룹 목록 */}
       <div className="space-y-2">
         {groups.length === 0 ? (
-          <div className="text-center py-6 sm:py-8 text-gray-400 dark:text-gray-500">
-            <Users className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm sm:text-base">저장된 그룹이 없습니다</p>
-            <p className="text-xs sm:text-sm mt-1">참가자를 추가하고 그룹을 저장해보세요</p>
+          <div className="text-center py-8 text-gray-400">
+            <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>저장된 그룹이 없습니다</p>
+            <p className="text-sm mt-1">참가자를 추가하고 그룹을 저장해보세요</p>
           </div>
         ) : (
           groups.map((group) => (
             <div
               key={group.id}
-              className={`rounded-lg px-3 sm:px-4 py-3 border-2 transition-all ${
+              className={`rounded-lg px-4 py-3 border-2 transition-all ${
                 activeGroupId === group.id
-                  ? 'bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 border-purple-400 dark:border-purple-600'
-                  : 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800'
+                  ? 'bg-gradient-to-r from-purple-100 to-pink-100 border-purple-400'
+                  : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
               }`}
             >
-              {/* 그룹 헤더 */}
+              {/* 헤더: 타이틀 + 버튼 */}
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">{group.name}</h3>
+                    <h3 className="font-semibold text-gray-800 text-lg">{group.name}</h3>
                     {activeGroupId === group.id && (
-                      <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full shrink-0">
                         활성
                       </span>
                     )}
@@ -185,16 +180,16 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
                     onClick={() => loadGroup(group)}
                     variant="outline"
                     size="sm"
-                    className="bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 text-xs px-2 sm:px-3"
+                    className="bg-white"
                   >
-                    <Download className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">불러오기</span>
+                    <Download className="w-4 h-4 mr-1" />
+                    불러오기
                   </Button>
                   <Button
                     onClick={() => deleteGroup(group.id)}
                     variant="outline"
                     size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 px-2"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -202,22 +197,22 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
               </div>
 
               {/* 그룹 정보 */}
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-600">
                 {group.participants.length}명 · {group.participants.join(', ')}
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 {new Date(group.createdAt).toLocaleDateString('ko-KR')} · 총 {getTotalWins(group.stats)}회 진행
               </p>
               {group.stats && Object.keys(group.stats).length > 0 && (
-                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="mt-2 text-xs text-gray-600">
                   <p className="font-semibold mb-1">당첨 기록:</p>
-                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {Object.entries(group.stats)
                       .sort(([, a], [, b]) => b - a)
                       .map(([name, count]) => (
                         <span
                           key={name}
-                          className="bg-white dark:bg-gray-700 px-2 py-1 rounded border border-purple-200 dark:border-purple-700 dark:text-gray-200"
+                          className="bg-white px-2 py-1 rounded border border-purple-200"
                         >
                           {name}: {count}회
                         </span>
@@ -231,7 +226,7 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
       </div>
 
       {groups.length > 0 && (
-        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
+        <p className="text-sm text-gray-500 mt-4 text-center">
           총 {groups.length}개 그룹 저장됨
         </p>
       )}
