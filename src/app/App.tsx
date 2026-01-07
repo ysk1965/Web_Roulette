@@ -5,7 +5,7 @@ import { GroupManager, ParticipantGroup } from './components/GroupManager';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Input } from './components/ui/input';
-import { Coffee, Save, Moon, Sun, Globe } from 'lucide-react';
+import { Coffee, Save, Moon, Sun, Globe, Share2, Link, MessageCircle } from 'lucide-react';
 import { AdBanner } from './components/AdBanner';
 import {
   logSpinRoulette,
@@ -194,6 +194,50 @@ export default function App() {
     setNewGroupName('');
   };
 
+  // 공유 기능
+  const siteUrl = 'https://milkyway.pe.kr';
+
+  const getShareMessage = () => {
+    const message = t('shareMessage').replace('{winner}', winner || '');
+    return `${message}\n${siteUrl}`;
+  };
+
+  const shareToTwitter = () => {
+    const text = encodeURIComponent(getShareMessage());
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const shareToKakao = () => {
+    // 카카오톡 공유 (Kakao SDK 필요 - 없으면 웹 공유로 대체)
+    if (navigator.share) {
+      navigator.share({
+        title: t('appTitle'),
+        text: getShareMessage(),
+        url: siteUrl,
+      });
+    } else {
+      // 카카오톡 링크 (모바일)
+      const text = encodeURIComponent(getShareMessage());
+      window.open(`https://story.kakao.com/share?url=${encodeURIComponent(siteUrl)}&text=${text}`, '_blank');
+    }
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getShareMessage());
+      alert(t('linkCopied'));
+    } catch {
+      // 폴백: 구형 브라우저
+      const textArea = document.createElement('textarea');
+      textArea.value = getShareMessage();
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert(t('linkCopied'));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8 px-3 sm:px-4 transition-colors duration-300">
       {/* 상단 광고 배너 */}
@@ -329,6 +373,42 @@ export default function App() {
                     <p className="text-base sm:text-lg">{t('winnerAnnouncement')}</p>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">{t('coffeeRequest')}</p>
+
+                  {/* 공유 버튼 */}
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center gap-1">
+                      <Share2 className="w-3 h-3" />
+                      {t('shareResult')}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <Button
+                        onClick={shareToKakao}
+                        variant="outline"
+                        size="sm"
+                        className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 border-yellow-500 text-xs px-3"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        {t('shareKakao')}
+                      </Button>
+                      <Button
+                        onClick={shareToTwitter}
+                        variant="outline"
+                        size="sm"
+                        className="bg-sky-400 hover:bg-sky-500 text-white border-sky-500 text-xs px-3"
+                      >
+                        𝕏
+                      </Button>
+                      <Button
+                        onClick={copyLink}
+                        variant="outline"
+                        size="sm"
+                        className="dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 text-xs px-3"
+                      >
+                        <Link className="w-4 h-4 mr-1" />
+                        {t('shareCopyLink')}
+                      </Button>
+                    </div>
+                  </div>
 
                   {/* 그룹 미연동 시 저장 유도 */}
                   {!activeGroupId && !showSavePrompt && (

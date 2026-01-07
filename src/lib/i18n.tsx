@@ -71,6 +71,14 @@ const translations = {
 
     // Ad
     adArea: '광고 영역',
+
+    // Share
+    shareResult: '결과 공유하기',
+    shareKakao: '카카오톡',
+    shareTwitter: '트위터',
+    shareCopyLink: '링크 복사',
+    linkCopied: '링크가 복사되었습니다!',
+    shareMessage: '🎉 오늘 커피 당첨자: {winner}!\n커피 룰렛으로 공정하게 정했어요',
   },
   en: {
     // Header
@@ -140,6 +148,14 @@ const translations = {
 
     // Ad
     adArea: 'Ad Space',
+
+    // Share
+    shareResult: 'Share Result',
+    shareKakao: 'KakaoTalk',
+    shareTwitter: 'Twitter',
+    shareCopyLink: 'Copy Link',
+    linkCopied: 'Link copied!',
+    shareMessage: "🎉 Today's coffee buyer: {winner}!\nDecided fairly with Coffee Roulette",
   },
 } as const;
 
