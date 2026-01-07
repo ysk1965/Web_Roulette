@@ -6,6 +6,7 @@ import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Coffee, Save, Moon, Sun } from 'lucide-react';
+import { AdBanner } from './components/AdBanner';
 import {
   Dialog,
   DialogContent,
@@ -169,7 +170,17 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-6 sm:py-12 px-3 sm:px-4 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8 px-3 sm:px-4 transition-colors duration-300">
+      {/* 상단 광고 배너 */}
+      <div className="max-w-6xl mx-auto mb-4">
+        <div className="hidden sm:block">
+          <AdBanner position="top" size="leaderboard" testMode={true} />
+        </div>
+        <div className="block sm:hidden">
+          <AdBanner position="top" size="banner" testMode={true} />
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-6 sm:mb-12">
@@ -254,6 +265,21 @@ export default function App() {
             />
           </div>
         </div>
+
+        {/* 하단 광고 배너 */}
+        <div className="mt-6 sm:mt-8">
+          <div className="hidden sm:block">
+            <AdBanner position="bottom" size="leaderboard" testMode={true} />
+          </div>
+          <div className="block sm:hidden">
+            <AdBanner position="bottom" size="banner" testMode={true} />
+          </div>
+        </div>
+
+        {/* 푸터 */}
+        <footer className="mt-6 sm:mt-8 text-center text-xs text-gray-400 dark:text-gray-500">
+          <p>© 2024 커피 룰렛. 공정한 커피 내기를 위해 만들어졌습니다.</p>
+        </footer>
 
         {/* 당첨자 팝업 */}
         <Dialog open={showWinnerDialog} onOpenChange={handleCloseWinnerDialog}>
