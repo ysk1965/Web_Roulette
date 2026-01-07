@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Trash2, Users, Download } from 'lucide-react';
+import { Save, Trash2, Users, Download, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
@@ -72,6 +72,16 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
   const deleteGroup = (id: string) => {
     if (confirm('이 그룹을 삭제하시겠습니까?')) {
       const updatedGroups = groups.filter((g) => g.id !== id);
+      setGroups(updatedGroups);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGroups));
+    }
+  };
+
+  const resetGroupStats = (id: string) => {
+    if (confirm('이 그룹의 당첨 기록을 초기화하시겠습니까?')) {
+      const updatedGroups = groups.map((g) =>
+        g.id === id ? { ...g, stats: {} } : g
+      );
       setGroups(updatedGroups);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGroups));
     }
@@ -200,7 +210,18 @@ export function GroupManager({ currentParticipants, onLoadGroup, activeGroupId }
               </p>
               {group.stats && Object.keys(group.stats).length > 0 && (
                 <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                  <p className="font-semibold mb-1">당첨 기록:</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-semibold">당첨 기록:</p>
+                    <Button
+                      onClick={() => resetGroupStats(group.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                    >
+                      <RotateCcw className="w-3 h-3 mr-1" />
+                      초기화
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-1 sm:gap-2">
                     {Object.entries(group.stats)
                       .sort(([, a], [, b]) => b - a)
