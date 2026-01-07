@@ -243,10 +243,10 @@ export default function App() {
       {/* 상단 광고 배너 */}
       <div className="max-w-6xl mx-auto mb-4">
         <div className="hidden sm:block">
-          <AdBanner position="top" size="leaderboard" testMode={true} />
+          <AdBanner position="top" size="leaderboard" adClient="ca-pub-4378386739623889" adSlot="5437423182" testMode={false} />
         </div>
         <div className="block sm:hidden">
-          <AdBanner position="top" size="banner" testMode={true} />
+          <AdBanner position="top" size="banner" adClient="ca-pub-4378386739623889" adSlot="5437423182" testMode={false} />
         </div>
       </div>
 
@@ -347,10 +347,10 @@ export default function App() {
         {/* 하단 광고 배너 */}
         <div className="mt-6 sm:mt-8">
           <div className="hidden sm:block">
-            <AdBanner position="bottom" size="leaderboard" testMode={true} />
+            <AdBanner position="bottom" size="leaderboard" adClient="ca-pub-4378386739623889" adSlot="2978780802" testMode={false} />
           </div>
           <div className="block sm:hidden">
-            <AdBanner position="bottom" size="banner" testMode={true} />
+            <AdBanner position="bottom" size="banner" adClient="ca-pub-4378386739623889" adSlot="2978780802" testMode={false} />
           </div>
         </div>
 
