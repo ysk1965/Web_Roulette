@@ -1,0 +1,21 @@
+{
+  "name": "커피 룰렛",
+  "short_name": "커피룰렛",
+  "description": "오늘 누가 커피를 쏠까요? 룰렛을 돌려보세요!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FEF3C7",
+  "theme_color": "#F59E0B",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

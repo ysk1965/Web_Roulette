@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 배경 원 (룰렛) -->
+  <circle cx="32" cy="32" r="30" fill="#F59E0B"/>
+
+  <!-- 룰렛 세그먼트들 -->
+  <path d="M32 32 L32 2 A30 30 0 0 1 58.98 17 Z" fill="#FF6B6B"/>
+  <path d="M32 32 L58.98 17 A30 30 0 0 1 58.98 47 Z" fill="#4ECDC4"/>
+  <path d="M32 32 L58.98 47 A30 30 0 0 1 32 62 Z" fill="#45B7D1"/>
+  <path d="M32 32 L32 62 A30 30 0 0 1 5.02 47 Z" fill="#FFA07A"/>
+  <path d="M32 32 L5.02 47 A30 30 0 0 1 5.02 17 Z" fill="#98D8C8"/>
+  <path d="M32 32 L5.02 17 A30 30 0 0 1 32 2 Z" fill="#F7DC6F"/>
+
+  <!-- 중앙 원 -->
+  <circle cx="32" cy="32" r="12" fill="white" stroke="#D1D5DB" stroke-width="2"/>
+
+  <!-- 커피컵 아이콘 -->
+  <path d="M26 28 L26 38 Q26 42 32 42 Q38 42 38 38 L38 28 Z" fill="#8B4513"/>
+  <path d="M38 30 Q44 30 44 35 Q44 40 38 40" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M28 26 Q30 23 32 26 Q34 23 36 26" fill="none" stroke="#8B4513" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 외곽 테두리 -->
+  <circle cx="32" cy="32" r="30" fill="none" stroke="white" stroke-width="3"/>
+</svg>
