@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import confetti from 'canvas-confetti';
 
 interface RouletteWheelProps {
@@ -10,32 +10,52 @@ interface RouletteWheelProps {
 
 export function RouletteWheel({ participants, isSpinning, onSpinComplete }: RouletteWheelProps) {
   const [rotation, setRotation] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const isSpinningRef = useRef(false);
+  const onSpinCompleteRef = useRef(onSpinComplete);
+
+  // 항상 최신 콜백 참조 유지
+  useEffect(() => {
+    onSpinCompleteRef.current = onSpinComplete;
+  }, [onSpinComplete]);
 
   const colors = [
     '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
     '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
   ];
 
-  useEffect(() => {
-    if (isSpinning && participants.length > 0) {
-      // 랜덤하게 당첨자 선택
-      const winnerIndex = Math.floor(Math.random() * participants.length);
-      setSelectedIndex(winnerIndex);
+  // 애니메이션 설정
+  const SPIN_DURATION = 6; // 총 스핀 시간 (초)
+  const TOTAL_SPINS = 7; // 총 회전 수
 
-      // 5바퀴 이상 돌고 당첨자 위치에서 멈추기
-      const spins = 5 + Math.random() * 3; // 5~8바퀴
+  useEffect(() => {
+    // 이미 스핀 중이면 중복 실행 방지
+    if (isSpinning && participants.length > 0 && !isSpinningRef.current) {
+      isSpinningRef.current = true;
+
+      // 1. 먼저 당첨자 결정 (스핀 시작 전에 확정)
+      const winnerIndex = Math.floor(Math.random() * participants.length);
+      const winner = participants[winnerIndex];
+
+      // 2. 당첨자 위치 계산 (세그먼트 내 랜덤 위치)
       const degreePerSegment = 360 / participants.length;
-      
-      // 화살표는 12시 방향(위)에 고정되어 있음
-      // winnerIndex 세그먼트의 중앙이 화살표 아래(12시)에 오도록 회전
-      // 세그먼트는 -90도(9시)부터 시작하므로, 12시는 0도
-      const winnerAngle = winnerIndex * degreePerSegment + (degreePerSegment / 2);
-      const targetRotation = spins * 360 - winnerAngle;
-      
+      // 세그먼트 경계에서 20% 안쪽 범위 내에서 랜덤하게 위치 선정
+      // 너무 가장자리면 애매해 보이므로 20%~80% 범위 사용
+      const minOffset = degreePerSegment * 0.2;
+      const maxOffset = degreePerSegment * 0.8;
+      const randomOffset = minOffset + Math.random() * (maxOffset - minOffset);
+      const winnerAngle = winnerIndex * degreePerSegment + randomOffset;
+
+      // 3. 현재 회전 상태를 고려하여 목표 회전값 계산
+      const currentNormalized = ((rotation % 360) + 360) % 360;
+      const targetNormalized = (360 - winnerAngle + 360) % 360;
+      const angleDiff = ((targetNormalized - currentNormalized) + 360) % 360;
+
+      // 7바퀴 + 당첨자 위치까지 회전
+      const targetRotation = rotation + TOTAL_SPINS * 360 + angleDiff;
+
       setRotation(targetRotation);
 
-      // 애니메이션 완료 후 당첨자 알림 및 confetti 효과
+      // 4. 애니메이션 완료 후 당첨자 알림 및 confetti 효과
       setTimeout(() => {
         // Confetti 효과 발동
         const duration = 3000;
@@ -46,7 +66,7 @@ export function RouletteWheel({ participants, isSpinning, onSpinComplete }: Roul
           return Math.random() * (max - min) + min;
         }
 
-        const interval: any = setInterval(function() {
+        const interval = setInterval(function() {
           const timeLeft = animationEnd - Date.now();
 
           if (timeLeft <= 0) {
@@ -54,7 +74,7 @@ export function RouletteWheel({ participants, isSpinning, onSpinComplete }: Roul
           }
 
           const particleCount = 50 * (timeLeft / duration);
-          
+
           // 양쪽에서 confetti 발사
           confetti({
             ...defaults,
@@ -68,10 +88,16 @@ export function RouletteWheel({ participants, isSpinning, onSpinComplete }: Roul
           });
         }, 250);
 
-        onSpinComplete(participants[winnerIndex]);
-      }, 4000);
+        isSpinningRef.current = false;
+        onSpinCompleteRef.current(winner);
+      }, SPIN_DURATION * 1000);
     }
-  }, [isSpinning, participants, onSpinComplete]);
+
+    // isSpinning이 false가 되면 ref 초기화
+    if (!isSpinning) {
+      isSpinningRef.current = false;
+    }
+  }, [isSpinning, participants]);
 
   if (participants.length === 0) {
     return (
@@ -95,8 +121,10 @@ export function RouletteWheel({ participants, isSpinning, onSpinComplete }: Roul
         className="relative w-80 h-80 rounded-full overflow-hidden border-8 border-white shadow-2xl"
         animate={{ rotate: rotation }}
         transition={{
-          duration: 4,
-          ease: [0.17, 0.67, 0.16, 0.99],
+          duration: SPIN_DURATION,
+          // 초반에 매우 빠르게 시작해서 점점 느려지는 이징
+          // cubic-bezier(0, 0.7, 0.1, 1) - 급격한 시작, 부드러운 감속
+          ease: [0, 0.7, 0.1, 1],
         }}
       >
         <svg viewBox="0 0 200 200" className="w-full h-full">
