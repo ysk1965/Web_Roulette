@@ -1,5 +1,6 @@
 import { Card } from "../ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { Button } from "../ui/button";
+import { CheckCircle2, Share2, MessageCircle, Link, Trophy } from "lucide-react";
 import { Book } from "../../data/bibleData";
 
 interface CompletedChapter {
@@ -23,6 +24,46 @@ export function BibleReadingChart({ books, completedChapters }: BibleReadingChar
   const totalChapters = books.reduce((sum, book) => sum + book.chapters.length, 0);
   const completedCount = completedChapters.length;
   const progress = totalChapters > 0 ? (completedCount / totalChapters) * 100 : 0;
+  const isAllCompleted = completedCount === totalChapters && totalChapters > 0;
+
+  // 완료된 책 이름들
+  const completedBookNames = books
+    .filter((book) =>
+      book.chapters.every((ch) => isChapterCompleted(book.name, ch.chapter))
+    )
+    .map((book) => book.name)
+    .join(", ");
+
+  const shareMessage = `${completedBookNames || books.map(b => b.name).join(", ")} 타자 성경 통독 완료! 🎉\n온라인으로 성경을 타이핑하며 통독했습니다.\n\n`;
+  const siteUrl = window.location.href;
+
+  const handleShareKakao = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: "성경 타자 통독 완료!",
+        text: shareMessage,
+        url: siteUrl,
+      });
+    } else {
+      const text = encodeURIComponent(shareMessage + siteUrl);
+      window.open(`https://story.kakao.com/share?url=${encodeURIComponent(siteUrl)}&text=${text}`, "_blank");
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareMessage + siteUrl);
+      alert("링크가 복사되었습니다!");
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = shareMessage + siteUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      alert("링크가 복사되었습니다!");
+    }
+  };
 
   return (
     <Card className="p-6">
@@ -92,6 +133,47 @@ export function BibleReadingChart({ books, completedChapters }: BibleReadingChar
               </div>
             );
           })}
+        </div>
+
+        {/* 공유하기 버튼 */}
+        <div className={`pt-4 border-t border-gray-200 ${isAllCompleted ? "" : "opacity-50"}`}>
+          {isAllCompleted ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2 text-green-600">
+                <Trophy className="w-6 h-6" />
+                <span className="font-bold text-lg">축하합니다! 통독을 완료했습니다!</span>
+              </div>
+              <p className="text-center text-sm text-gray-500 mb-3">
+                완료 소식을 공유해보세요
+              </p>
+              <div className="flex justify-center gap-3">
+                <Button
+                  onClick={handleShareKakao}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  카카오톡 공유
+                </Button>
+                <Button
+                  onClick={handleCopyLink}
+                  variant="outline"
+                >
+                  <Link className="w-4 h-4 mr-2" />
+                  링크 복사
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-gray-400">
+                <Share2 className="w-5 h-5" />
+                <span className="font-medium">공유하기</span>
+              </div>
+              <p className="text-sm text-gray-400">
+                모든 장을 완료하면 공유할 수 있습니다
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </Card>
