@@ -5,7 +5,7 @@ export type Language = 'ko' | 'en';
 const translations = {
   ko: {
     // Header
-    appTitle: '커피 네이버 룰렛',
+    appTitle: '커피 룰렛 네이버 원판 돌리기',
     appDescription: '오늘 누가 커피를 쏠까요? 룰렛을 돌려보세요!',
 
     // Roulette
@@ -84,6 +84,26 @@ const translations = {
     shareCopyLink: '링크 복사',
     linkCopied: '링크가 복사되었습니다!',
     shareMessage: '🎉 오늘 커피 당첨자: {winner}!\n커피 룰렛으로 공정하게 정했어요',
+
+    // Install App
+    addToHomeScreen: '홈 화면에 추가',
+    installApp: '앱 설치하기',
+    installDescription: '홈 화면에 추가하면 더 빠르게 접근할 수 있어요!',
+    alreadyInstalled: '이미 설치됨',
+
+    // Bookmark
+    bookmarkTip: '💡 원활한 사용을 위해 즐겨찾기에 추가해주세요!',
+    bookmarkHow: '즐겨찾기 추가 방법',
+    bookmarkShortcut: '를 누르면 즐겨찾기에 추가됩니다',
+
+    // Group Save Prompt
+    saveGroupPromptTitle: '그룹으로 저장할까요?',
+    saveGroupPromptDescription: '그룹으로 저장하면 다음에 참가자를 다시 입력할 필요 없이 바로 불러올 수 있어요!',
+    saveGroupPromptBenefit1: '✓ 원클릭으로 참가자 불러오기',
+    saveGroupPromptBenefit2: '✓ 당첨 기록 자동 저장',
+    saveGroupPromptBenefit3: '✓ 누가 많이 당첨됐는지 확인',
+    saveGroupYes: '그룹 저장하기',
+    saveGroupNo: '다음에 할게요',
   },
   en: {
     // Header
@@ -166,6 +186,26 @@ const translations = {
     tutorialTitle: 'Welcome! 👋',
     tutorialMessage: 'Enter a name and click + to add participants!',
     tutorialDismiss: 'Got it',
+
+    // Install App
+    addToHomeScreen: 'Add to Home Screen',
+    installApp: 'Install App',
+    installDescription: 'Add to home screen for quick access!',
+    alreadyInstalled: 'Already installed',
+
+    // Bookmark
+    bookmarkTip: '💡 Add to bookmarks for easy access!',
+    bookmarkHow: 'How to bookmark',
+    bookmarkShortcut: ' to add to bookmarks',
+
+    // Group Save Prompt
+    saveGroupPromptTitle: 'Save as a group?',
+    saveGroupPromptDescription: 'Save as a group so you can load participants instantly next time!',
+    saveGroupPromptBenefit1: '✓ Load participants with one click',
+    saveGroupPromptBenefit2: '✓ Auto-save win records',
+    saveGroupPromptBenefit3: '✓ Track who won the most',
+    saveGroupYes: 'Save Group',
+    saveGroupNo: 'Maybe later',
   },
 } as const;
 

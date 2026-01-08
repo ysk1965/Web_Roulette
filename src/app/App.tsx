@@ -5,7 +5,7 @@ import { GroupManager, ParticipantGroup } from './components/GroupManager';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Input } from './components/ui/input';
-import { Coffee, Save, Moon, Sun, Globe, Share2, Link, MessageCircle } from 'lucide-react';
+import { Coffee, Save, Moon, Sun, Globe, Share2, Link, MessageCircle, Download, Check, Star } from 'lucide-react';
 import { AdBanner } from './components/AdBanner';
 import {
   logSpinRoulette,
@@ -43,9 +43,12 @@ export default function App() {
   const [showWinnerDialog, setShowWinnerDialog] = useState(false);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showGroupSaveDialog, setShowGroupSaveDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
   // 다크 모드 초기화
@@ -69,6 +72,47 @@ export default function App() {
   const dismissTutorial = () => {
     setShowTutorial(false);
     localStorage.setItem(TUTORIAL_KEY, 'true');
+  };
+
+  // PWA 설치 프롬프트
+  useEffect(() => {
+    // 이미 설치된 앱인지 체크
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsAppInstalled(true);
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    // @ts-expect-error - prompt() exists on BeforeInstallPromptEvent
+    deferredPrompt.prompt();
+    // @ts-expect-error - userChoice exists on BeforeInstallPromptEvent
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setIsAppInstalled(true);
+    }
+    setDeferredPrompt(null);
   };
 
   // 다크 모드 토글
@@ -210,7 +254,45 @@ export default function App() {
   const handleCloseWinnerDialog = () => {
     setShowWinnerDialog(false);
     setShowSavePrompt(false);
+
+    // 그룹 미저장 시 그룹 저장 유도 팝업 표시
+    if (!activeGroupId && participants.length >= 2) {
+      setTimeout(() => {
+        setShowGroupSaveDialog(true);
+      }, 300);
+    }
+  };
+
+  const handleCloseGroupSaveDialog = () => {
+    setShowGroupSaveDialog(false);
     setNewGroupName('');
+  };
+
+  const handleSaveGroupFromPrompt = () => {
+    if (!newGroupName.trim()) {
+      alert(t('enterGroupName'));
+      return;
+    }
+
+    const newGroupId = Date.now().toString();
+    const newGroup: ParticipantGroup = {
+      id: newGroupId,
+      name: newGroupName.trim(),
+      participants: [...participants],
+      createdAt: Date.now(),
+      stats: winner ? { [winner]: 1 } : {},
+    };
+
+    const savedGroups = localStorage.getItem(STORAGE_KEY);
+    const groups: ParticipantGroup[] = savedGroups ? JSON.parse(savedGroups) : [];
+    const updatedGroups = [...groups, newGroup];
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGroups));
+    setActiveGroupId(newGroupId);
+    setShowGroupSaveDialog(false);
+    setNewGroupName('');
+    window.dispatchEvent(new Event('storage'));
+    logGroupSave(newGroupName.trim(), participants.length);
   };
 
   // 공유 기능
@@ -335,6 +417,57 @@ export default function App() {
                 <li>{t('step5')}</li>
                 <li>{t('step6')}</li>
               </ol>
+
+              {/* 즐겨찾기 추가 안내 */}
+              <div className="mt-4 p-4 bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40 rounded-lg border border-amber-300 dark:border-amber-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  <p className="font-semibold text-amber-800 dark:text-amber-200 text-sm sm:text-base">
+                    {t('bookmarkTip')}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-2 bg-white/80 dark:bg-gray-800/80 rounded-md py-3 px-4">
+                  <kbd className="px-3 py-1.5 text-sm font-mono font-semibold bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-200">
+                    {navigator.platform?.toLowerCase().includes('mac') ? '⌘' : 'Ctrl'}
+                  </kbd>
+                  <span className="text-gray-500 dark:text-gray-400 font-bold">+</span>
+                  <kbd className="px-3 py-1.5 text-sm font-mono font-semibold bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-200">
+                    D
+                  </kbd>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                    {t('bookmarkShortcut')}
+                  </span>
+                </div>
+              </div>
+
+              {/* 홈 화면에 추가 버튼 */}
+              {(deferredPrompt || isAppInstalled) && (
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                  <Button
+                    onClick={handleInstallClick}
+                    disabled={isAppInstalled || !deferredPrompt}
+                    variant="outline"
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-0 disabled:from-gray-400 disabled:to-gray-500"
+                  >
+                    {isAppInstalled ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        {t('alreadyInstalled')}
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-2" />
+                        {t('addToHomeScreen')}
+                      </>
+                    )}
+                  </Button>
+                  {!isAppInstalled && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                      {t('installDescription')}
+                    </p>
+                  )}
+                </div>
+              )}
             </Card>
           </div>
 
@@ -448,54 +581,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* 그룹 미연동 시 저장 유도 */}
-                  {!activeGroupId && !showSavePrompt && (
-                    <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                      <p className="text-sm text-amber-800 dark:text-amber-200 mb-2">
-                        {t('saveResult')}
-                      </p>
-                      <Button
-                        onClick={() => setShowSavePrompt(true)}
-                        variant="outline"
-                        size="sm"
-                        className="border-amber-400 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-900/50"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        {t('saveAsGroup')}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* 그룹 저장 폼 */}
-                  {!activeGroupId && showSavePrompt && (
-                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 text-left">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                        {t('currentParticipants')} {participants.length}{t('peopleToSave')}
-                      </p>
-                      <div className="flex gap-2">
-                        <Input
-                          type="text"
-                          value={newGroupName}
-                          onChange={(e) => setNewGroupName(e.target.value)}
-                          placeholder={t('groupNamePlaceholder')}
-                          onKeyDown={(e) => e.key === 'Enter' && saveNewGroupWithWinner()}
-                          className="text-base dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                        />
-                        <Button onClick={saveNewGroupWithWinner} size="sm">
-                          {t('save')}
-                        </Button>
-                      </div>
-                      <Button
-                        onClick={() => setShowSavePrompt(false)}
-                        variant="ghost"
-                        size="sm"
-                        className="mt-2 text-gray-500 dark:text-gray-400"
-                      >
-                        {t('cancel')}
-                      </Button>
-                    </div>
-                  )}
-
                   {/* 그룹 연동됨 - 당첨 기록 표시 */}
                   {activeGroupId && (
                     <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800 text-left">
@@ -546,6 +631,71 @@ export default function App() {
             >
               {t('confirm')}
             </Button>
+          </DialogContent>
+        </Dialog>
+
+        {/* 그룹 저장 유도 팝업 */}
+        <Dialog open={showGroupSaveDialog} onOpenChange={handleCloseGroupSaveDialog}>
+          <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl sm:text-2xl text-center dark:text-gray-100 flex items-center justify-center gap-2">
+                <Save className="w-6 h-6 text-amber-500" />
+                {t('saveGroupPromptTitle')}
+              </DialogTitle>
+              <DialogDescription asChild>
+                <div className="pt-4">
+                  <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
+                    {t('saveGroupPromptDescription')}
+                  </p>
+
+                  {/* 장점 리스트 */}
+                  <div className="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4 mb-4 space-y-2">
+                    <p className="text-sm text-amber-800 dark:text-amber-200">{t('saveGroupPromptBenefit1')}</p>
+                    <p className="text-sm text-amber-800 dark:text-amber-200">{t('saveGroupPromptBenefit2')}</p>
+                    <p className="text-sm text-amber-800 dark:text-amber-200">{t('saveGroupPromptBenefit3')}</p>
+                  </div>
+
+                  {/* 참가자 미리보기 */}
+                  <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 mb-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      {t('currentParticipants')}: {participants.length}{t('participants')}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {participants.map((p, i) => (
+                        <span key={i} className="text-xs bg-white dark:bg-gray-600 px-2 py-1 rounded text-gray-700 dark:text-gray-200">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 그룹 이름 입력 */}
+                  <Input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder={t('groupNamePlaceholder')}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveGroupFromPrompt()}
+                    className="text-base dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 mb-4"
+                  />
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleCloseGroupSaveDialog}
+                variant="outline"
+                className="flex-1 dark:border-gray-600 dark:text-gray-300"
+              >
+                {t('saveGroupNo')}
+              </Button>
+              <Button
+                onClick={handleSaveGroupFromPrompt}
+                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+              >
+                {t('saveGroupYes')}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
