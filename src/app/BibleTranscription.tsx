@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChapterView } from "./components/bible/ChapterView";
 import { TypingInput } from "./components/bible/TypingInput";
 import { BibleReadingChart } from "./components/bible/BibleReadingChart";
@@ -30,6 +30,19 @@ export default function BibleTranscription() {
   const [completedChapters, setCompletedChapters] = useState<CompletedChapter[]>([]);
   const [showChapterComplete, setShowChapterComplete] = useState(false);
   const [showReadingChart, setShowReadingChart] = useState(false);
+  const chapterButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
+
+  // 선택된 장이 변경되면 해당 버튼으로 스크롤
+  useEffect(() => {
+    const button = chapterButtonRefs.current[selectedChapter];
+    if (button) {
+      button.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [selectedChapter]);
 
   // LocalStorage에서 진행 상황 불러오기
   useEffect(() => {
@@ -267,6 +280,14 @@ export default function BibleTranscription() {
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
       <div className="max-w-5xl mx-auto space-y-4 p-4">
+        {/* 페이지 타이틀 */}
+        <div className="text-center py-6">
+          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl shadow-lg">
+            <BookOpen className="w-8 h-8" />
+            <h1 className="text-2xl font-bold tracking-wide">온라인 타자 성경 통독</h1>
+          </div>
+        </div>
+
         {/* 상단: 홈 버튼 + 책 선택 + 필사표 버튼 */}
         <div className="flex items-center gap-4">
           {/* <Link to="/">
@@ -335,6 +356,7 @@ export default function BibleTranscription() {
               return (
                 <button
                   key={chapter.chapter}
+                  ref={(el) => { chapterButtonRefs.current[chapter.chapter] = el; }}
                   onClick={() => handleChapterChange(chapter.chapter)}
                   className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition-all border-2 ${
                     isSelected
@@ -470,6 +492,11 @@ export default function BibleTranscription() {
           chapter={selectedChapter}
           onNext={handleNextChapter}
         />
+
+        {/* 푸터 */}
+        <footer className="mt-8 text-center text-xs text-gray-400">
+          <p>Copyright © 2026 by Sungrak Church All Rights Reserved.</p>
+        </footer>
       </div>
     </div>
   );
